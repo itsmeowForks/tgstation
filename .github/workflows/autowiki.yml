@@ -27,10 +27,6 @@ jobs:
       with:
         path: ~/BYOND
         key: ${{ runner.os }}-byond-${{ hashFiles('dependencies.sh') }}
-    - name: Install rust-g
-      if: steps.secrets_set.outputs.SECRETS_ENABLED
-      run: |
-        bash tools/ci/install_rust_g.sh
     - name: Compile and generate Autowiki files
       if: steps.secrets_set.outputs.SECRETS_ENABLED
       run: |
