@@ -125,7 +125,7 @@
 
 	if (!isnull(nuke_icon_state))
 		var/datum/universal_icon/nuke = uni_icon('icons/obj/machines/nuke.dmi', nuke_icon_state)
-		nuke.shift(SOUTH, 6, ANTAGONIST_PREVIEW_ICON_SIZE, ANTAGONIST_PREVIEW_ICON_SIZE)
+		nuke.shift(SOUTH, 6, 32, 32)
 		final_icon.blend_icon(nuke, ICON_OVERLAY)
 
 	return finish_preview_icon(final_icon)
