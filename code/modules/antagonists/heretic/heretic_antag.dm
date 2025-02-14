@@ -240,7 +240,7 @@
 	return ..()
 
 /datum/antagonist/heretic/get_preview_icon()
-	var/icon/icon = render_preview_outfit(preview_outfit)
+	var/datum/universal_icon/icon = render_preview_outfit(preview_outfit)
 
 	// MOTHBLOCKS TOOD: Copied and pasted from cult, make this its own proc
 
@@ -249,14 +249,13 @@
 
 	// Center the dude, because item icon states start from the center.
 	// This makes the image 64x64.
-	icon.Crop(-15, -15, 48, 48)
+	icon.crop(-15, -15, 48, 48)
 
-	var/obj/item/melee/sickly_blade/blade = new
-	icon.Blend(icon(blade.lefthand_file, blade.inhand_icon_state), ICON_OVERLAY)
-	qdel(blade)
+	var/obj/item/melee/sickly_blade/blade = /obj/item/melee/sickly_blade
+	icon.blend_icon(uni_icon(initial(blade.lefthand_file), initial(blade.inhand_icon_state)), ICON_OVERLAY)
 
 	// Move the guy back to the bottom left, 32x32.
-	icon.Crop(17, 17, 48, 48)
+	icon.crop(17, 17, 48, 48)
 
 	return finish_preview_icon(icon)
 

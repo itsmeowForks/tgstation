@@ -6,17 +6,19 @@
 	ui_name = "AntagInfoSentient"
 
 /datum/antagonist/sentient_creature/get_preview_icon()
-	var/icon/final_icon = icon('icons/mob/simple/pets.dmi', "corgi")
+	var/datum/universal_icon/final_icon = uni_icon('icons/mob/simple/pets.dmi', "corgi")
 
-	var/icon/pandora = icon('icons/mob/simple/lavaland/lavaland_elites.dmi', "pandora")
-	pandora.Blend(rgb(128, 128, 128, 128), ICON_MULTIPLY)
-	final_icon.Blend(pandora, ICON_UNDERLAY, -ICON_SIZE_X / 4, 0)
+	var/datum/universal_icon/pandora = uni_icon('icons/mob/simple/lavaland/lavaland_elites.dmi', "pandora")
+	pandora.blend_color(rgb(128, 128, 128, 128), ICON_MULTIPLY)
+	pandora.shift(WEST, ICON_SIZE_X / 4, 32, 32)
+	final_icon.blend_icon(pandora, ICON_UNDERLAY)
 
-	var/icon/rat = icon('icons/mob/simple/animal.dmi', "regalrat")
-	rat.Blend(rgb(128, 128, 128, 128), ICON_MULTIPLY)
-	final_icon.Blend(rat, ICON_UNDERLAY, ICON_SIZE_X / 4, 0)
+	var/datum/universal_icon/rat = uni_icon('icons/mob/simple/animal.dmi', "regalrat")
+	rat.blend_color(rgb(128, 128, 128, 128), ICON_MULTIPLY)
+	rat.shift(EAST, ICON_SIZE_X / 4, 32, 32)
+	final_icon.blend_icon(rat, ICON_UNDERLAY)
 
-	final_icon.Scale(ANTAGONIST_PREVIEW_ICON_SIZE, ANTAGONIST_PREVIEW_ICON_SIZE)
+	final_icon.scale(ANTAGONIST_PREVIEW_ICON_SIZE, ANTAGONIST_PREVIEW_ICON_SIZE)
 	return final_icon
 
 /datum/antagonist/sentient_creature/on_gain()

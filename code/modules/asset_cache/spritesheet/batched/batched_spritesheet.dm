@@ -199,6 +199,7 @@
 	else if(!findtext(data_out, "{", 1, 2))
 		rustg_file_write(entries_json, "[GLOB.log_directory]/spritesheet_debug_[name].json")
 		CRASH("Spritesheet [name] UNKNOWN ERROR: [data_out]")
+	rustg_file_write(entries_json, "[GLOB.log_directory]/spritesheet_debug_[name].json")
 	var/data = json_decode(data_out)
 	sizes = data["sizes"]
 	sprites = data["sprites"]
