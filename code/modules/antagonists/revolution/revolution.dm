@@ -237,7 +237,7 @@
 
 	var/datum/universal_icon/rev_head_icon = uni_icon('icons/mob/huds/antag_hud.dmi', "rev_head")
 	rev_head_icon.scale(48, 48)
-	rev_head_icon.crop(1 + 10, 1 + 16, 64 + 10, 64 + 16)
+	rev_head_icon.crop(1 - 10, 1 - 16, 64 - 10, 64 - 16)
 	final_icon.blend_icon(rev_head_icon, ICON_OVERLAY)
 
 	return finish_preview_icon(final_icon)
