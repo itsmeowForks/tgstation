@@ -230,7 +230,39 @@
 /// getFlatIcon for [/datum/universal_icon]s
 /// Only supports 32x32 icons facing south
 /// Tough luck if you want anything else
+/// Still fairly slow for complex appearances due to filesystem operations. Try to avoid using it
 /proc/get_flat_uni_icon(image/appearance, deficon, defstate, defblend, start = TRUE, parentcolor)
+	// Loop through the underlays, then overlays, sorting them into the layers list
+	#define PROCESS_OVERLAYS_OR_UNDERLAYS(flat, process, base_layer) \
+		for (var/i in 1 to process.len) { \
+			var/image/current = process[i]; \
+			if (!current) { \
+				continue; \
+			} \
+			if (current.plane != FLOAT_PLANE && current.plane != appearance.plane) { \
+				continue; \
+			} \
+			var/current_layer = current.layer; \
+			if (current_layer < 0) { \
+				if (current_layer <= -1000) { \
+					return flat; \
+				} \
+				current_layer = base_layer + appearance.layer + current_layer / 1000; \
+			} \
+			/* If we are using topdown rendering, chop that part off so things layer together as expected */ \
+			if((current_layer >= TOPDOWN_LAYER && current_layer < EFFECTS_LAYER) || current_layer > TOPDOWN_LAYER + EFFECTS_LAYER) { \
+				current_layer -= TOPDOWN_LAYER; \
+			} \
+			for (var/index_to_compare_to in 1 to layers.len) { \
+				var/compare_to = layers[index_to_compare_to]; \
+				if (current_layer < layers[compare_to]) { \
+					layers.Insert(index_to_compare_to, current); \
+					break; \
+				} \
+			} \
+			layers[current] = current_layer; \
+		}
+
 	var/datum/universal_icon/flat = uni_icon('icons/blanks/32x32.dmi', "nothing")
 
 	if(!appearance || appearance.alpha <= 0)
@@ -247,9 +279,19 @@
 	var/should_display = TRUE
 	var/curicon = appearance.icon || deficon
 	var/string_curicon = "[curicon]"
-	if(!isfile(curicon) || string_curicon == "/icon" || string_curicon == "/image" || !length(string_curicon))
-		should_display = FALSE
 	var/curstate = appearance.icon_state || defstate
+	// Filter out 'runtime' icons (server-generated RSC cache icons)
+	// Write the icon to the filesystem so it can be used by iconforge
+	if(!isfile(curicon) || string_curicon == "/icon" || string_curicon == "/image" || !length(string_curicon))
+		var/file_path_tmp = "tmp/uni_icon-tmp-[rand(1, 999)].dmi" // this filename is temporary.
+		fcopy(curicon, file_path_tmp)
+		var/file_hash = rustg_hash_file(RUSTG_HASH_MD5, file_path_tmp)
+		// Use the hash as its new filename - this allows the uni_icon to be smart cached, because the filename will be consistent between runs if the content is the same
+		var/file_path = "tmp/uni_icon-[file_hash].dmi"
+		fcopy(file_path_tmp, file_path)
+		fdel(file_path_tmp) // delete the old one
+		curicon = file(file_path)
+
 	var/curblend = appearance.blend_mode || defblend
 	var/list/curstates = icon_states(curicon)
 	if(!(curstate in curstates))
@@ -270,49 +312,8 @@
 			copy.blend_mode = curblend
 			layers[copy] = appearance.layer
 
-		var/base_layer = 0
-		for (var/i in 1 to appearance.underlays.len)
-			var/image/current = appearance.underlays[i]
-			if (!current)
-				continue
-			if (current.plane != FLOAT_PLANE && current.plane != appearance.plane)
-				continue
-			var/current_layer = current.layer
-			if (current_layer < 0)
-				if (current_layer <= -1000)
-					return flat
-				current_layer = base_layer + appearance.layer + current_layer / 1000
-			/* If we are using topdown rendering, chop that part off so things layer together as expected */
-			if((current_layer >= TOPDOWN_LAYER && current_layer < EFFECTS_LAYER) || current_layer > TOPDOWN_LAYER + EFFECTS_LAYER)
-				current_layer -= TOPDOWN_LAYER
-			for (var/index_to_compare_to in 1 to layers.len)
-				var/compare_to = layers[index_to_compare_to]
-				if (current_layer < layers[compare_to])
-					layers.Insert(index_to_compare_to, current)
-					break
-			layers[current] = current_layer
-
-		base_layer = 1
-		for (var/i in 1 to appearance.overlays.len)
-			var/image/current = appearance.overlays[i]
-			if (!current)
-				continue
-			if (current.plane != FLOAT_PLANE && current.plane != appearance.plane)
-				continue
-			var/current_layer = current.layer
-			if (current_layer < 0)
-				if (current_layer <= -1000)
-					return flat
-				current_layer = base_layer + appearance.layer + current_layer / 1000
-			/* If we are using topdown rendering, chop that part off so things layer together as expected */
-			if((current_layer >= TOPDOWN_LAYER && current_layer < EFFECTS_LAYER) || current_layer > TOPDOWN_LAYER + EFFECTS_LAYER)
-				current_layer -= TOPDOWN_LAYER
-			for (var/index_to_compare_to in 1 to layers.len)
-				var/compare_to = layers[index_to_compare_to]
-				if (current_layer < layers[compare_to])
-					layers.Insert(index_to_compare_to, current)
-					break
-			layers[current] = current_layer
+		PROCESS_OVERLAYS_OR_UNDERLAYS(flat, appearance.underlays, 0)
+		PROCESS_OVERLAYS_OR_UNDERLAYS(flat, appearance.overlays, 1)
 
 		var/datum/universal_icon/add // Icon of overlay being added
 
@@ -334,7 +335,7 @@
 			if(layer_image.alpha == 0)
 				continue
 
-			if(layer_image == copy && "[layer_image.icon]" != "/icon") // 'layer_image' is an /image based on the object being flattened.
+			if(layer_image == copy && length("[layer_image.icon]")) // 'layer_image' is an /image based on the object being flattened, and isn't a 'runtime' icon.
 				curblend = BLEND_OVERLAY
 				add = uni_icon(layer_image.icon, layer_image.icon_state, SOUTH)
 				if(appearance.color)
@@ -342,7 +343,7 @@
 						stack_trace("Unsupported color map appearance provided to get_flat_uni_icon, ignoring it.")
 					else
 						add.blend_color(appearance.color, ICON_MULTIPLY)
-			else // 'I' is an appearance object.
+			else // 'layer_image' is an appearance object.
 				add = get_flat_uni_icon(layer_image, curicon, curstate, curblend, FALSE, next_parentcolor)
 			if(!add || !length(add.icon_file))
 				continue
@@ -368,3 +369,5 @@
 				final_icon.blend_color(appearance.color, ICON_MULTIPLY)
 
 		return final_icon
+
+	#undef PROCESS_OVERLAYS_OR_UNDERLAYS
