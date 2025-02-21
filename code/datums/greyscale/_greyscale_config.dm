@@ -30,7 +30,7 @@
 	/// The md5 file hash for the json configuration. Used to check if the file has changed
 	var/json_config_hash
 
-	/// The raw string contnts of the JSON config file.
+	/// The raw string contents of the JSON config file.
 	var/raw_json_string
 
 	/// String path to the icon file, used for reloading
