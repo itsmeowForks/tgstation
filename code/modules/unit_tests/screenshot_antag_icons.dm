@@ -2,7 +2,7 @@
 /datum/unit_test/screenshot_antag_icons
 
 /datum/unit_test/screenshot_antag_icons/Run()
-	var/datum/asset/spritesheet/antagonists/antagonists = get_asset_datum(/datum/asset/spritesheet/antagonists)
+	var/datum/asset/spritesheet_batched/antagonists/antagonists = get_asset_datum(/datum/asset/spritesheet_batched/antagonists)
 
 	for (var/antag_icon_key in antagonists.antag_icons)
 		var/icon/reference_icon = antagonists.antag_icons[antag_icon_key]
