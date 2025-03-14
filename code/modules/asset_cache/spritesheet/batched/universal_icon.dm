@@ -284,11 +284,11 @@
 	// Filter out 'runtime' icons (server-generated RSC cache icons)
 	// Write the icon to the filesystem so it can be used by iconforge
 	if(!isfile(curicon) || string_curicon == "/icon" || string_curicon == "/image" || !length(string_curicon))
-		var/file_path_tmp = "tmp/uni_icon-tmp-[rand(1, 999)].dmi" // this filename is temporary.
+		var/file_path_tmp = "tmp/uni_icon/uni_icon-tmp-[rand(1, 999)].dmi" // this filename is temporary.
 		fcopy(curicon, file_path_tmp)
 		var/file_hash = rustg_hash_file(RUSTG_HASH_MD5, file_path_tmp)
 		// Use the hash as its new filename - this allows the uni_icon to be smart cached, because the filename will be consistent between runs if the content is the same
-		var/file_path = "tmp/uni_icon-[file_hash].dmi"
+		var/file_path = "tmp/uni_icon/uni_icon-[file_hash].dmi"
 		fcopy(file_path_tmp, file_path)
 		fdel(file_path_tmp) // delete the old one
 		curicon = file(file_path)
