@@ -109,19 +109,24 @@
 	if (!preview_outfit)
 		return null
 
-	var/icon/final_icon = render_preview_outfit(preview_outfit)
+	var/datum/universal_icon/final_icon = render_preview_outfit(preview_outfit)
 
 	if (!isnull(preview_outfit_behind))
-		var/icon/teammate = render_preview_outfit(preview_outfit_behind)
-		teammate.Blend(rgb(128, 128, 128, 128), ICON_MULTIPLY)
+		var/datum/universal_icon/teammate = render_preview_outfit(preview_outfit_behind)
+		teammate.blend_color(rgb(128, 128, 128, 128), ICON_MULTIPLY)
 
-		final_icon.Blend(teammate, ICON_UNDERLAY, -ICON_SIZE_X / 4, 0)
-		final_icon.Blend(teammate, ICON_UNDERLAY, ICON_SIZE_X / 4, 0)
+		var/datum/universal_icon/teammate_left = teammate.copy()
+		teammate_left.shift(WEST, ICON_SIZE_X / 4, 32, 32)
+		var/datum/universal_icon/teammate_right = teammate.copy()
+		teammate_right.shift(EAST, ICON_SIZE_X / 4, 32, 32)
+
+		final_icon.blend_icon(teammate_left, ICON_UNDERLAY)
+		final_icon.blend_icon(teammate_right, ICON_UNDERLAY)
 
 	if (!isnull(nuke_icon_state))
-		var/icon/nuke = icon('icons/obj/machines/nuke.dmi', nuke_icon_state)
-		nuke.Shift(SOUTH, 6)
-		final_icon.Blend(nuke, ICON_OVERLAY)
+		var/datum/universal_icon/nuke = uni_icon('icons/obj/machines/nuke.dmi', nuke_icon_state)
+		nuke.shift(SOUTH, 6, ANTAGONIST_PREVIEW_ICON_SIZE, ANTAGONIST_PREVIEW_ICON_SIZE)
+		final_icon.blend_icon(nuke, ICON_OVERLAY)
 
 	return finish_preview_icon(final_icon)
 

@@ -36,7 +36,7 @@ GLOBAL_LIST_INIT(non_ruleset_antagonists, list(
 
 /datum/preference_middleware/antags/get_ui_assets()
 	return list(
-		get_asset_datum(/datum/asset/spritesheet/antagonists),
+		get_asset_datum(/datum/asset/spritesheet_batched/antagonists),
 	)
 
 /datum/preference_middleware/antags/proc/set_antags(list/params, mob/user)
@@ -130,14 +130,14 @@ GLOBAL_LIST_INIT(non_ruleset_antagonists, list(
 	return serialized_antags
 
 /// Sprites generated for the antagonists panel
-/datum/asset/spritesheet/antagonists
+/datum/asset/spritesheet_batched/antagonists
 	name = "antagonists"
 	early = TRUE
 
 	/// Mapping of spritesheet keys -> icons
 	var/list/antag_icons = list()
 
-/datum/asset/spritesheet/antagonists/create_spritesheets()
+/datum/asset/spritesheet_batched/antagonists/create_spritesheets()
 	var/list/antagonists = GLOB.non_ruleset_antagonists.Copy()
 
 	for (var/datum/dynamic_ruleset/ruleset as anything in subtypesof(/datum/dynamic_ruleset))
@@ -161,7 +161,7 @@ GLOBAL_LIST_INIT(non_ruleset_antagonists, list(
 			continue
 
 		var/datum/antagonist/antagonist = new antagonist_type
-		var/icon/preview_icon = antagonist.get_preview_icon()
+		var/datum/universal_icon/preview_icon = antagonist.get_preview_icon()
 
 		if (isnull(preview_icon))
 			continue
@@ -175,7 +175,7 @@ GLOBAL_LIST_INIT(non_ruleset_antagonists, list(
 		antag_icons[spritesheet_key] = preview_icon
 
 	for (var/spritesheet_key in antag_icons)
-		Insert(spritesheet_key, antag_icons[spritesheet_key])
+		insert_icon(spritesheet_key, antag_icons[spritesheet_key])
 
 /// Serializes an antag name to be used for preferences UI
 /proc/serialize_antag_name(antag_name)
