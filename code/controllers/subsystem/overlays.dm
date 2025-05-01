@@ -30,12 +30,36 @@ SUBSYSTEM_DEF(overlays)
 	var/static/image/stringbro = new()
 	stringbro.icon = icon
 	stringbro.icon_state = iconstate
-	return stringbro.appearance
+	// universal_icon_bindings: persist apperance metadata
+	var/image/stringbro_apperance = stringbro.appearance
+	if(istype(icon, /icon))
+		var/icon/stringbro_icon = icon
+		stringbro_apperance.icon_file = stringbro_icon.icon_file
+		stringbro_apperance.transforms = stringbro_icon.transforms
+	else if(istype(icon, /image))
+		var/icon/stringbro_image = icon
+		stringbro_apperance.icon_file = stringbro_image.icon_file
+		stringbro_apperance.transforms = stringbro_image.transforms
+	else
+		stringbro_apperance.icon_file = "[icon]"
+	return stringbro_apperance
 
 /proc/icon2appearance(icon)
 	var/static/image/iconbro = new()
 	iconbro.icon = icon
-	return iconbro.appearance
+	// universal_icon_bindings: persist apperance metadata
+	var/image/iconbro_apperance = iconbro.appearance
+	if(istype(icon, /icon))
+		var/icon/iconbro_icon = icon
+		iconbro_apperance.icon_file = iconbro_icon.icon_file
+		iconbro_apperance.transforms = iconbro_icon.transforms
+	else if(istype(icon, /image))
+		var/icon/iconbro_image = icon
+		iconbro_apperance.icon_file = iconbro_image.icon_file
+		iconbro_apperance.transforms = iconbro_image.transforms
+	else
+		iconbro_apperance.icon_file = "[icon]"
+	return iconbro_apperance
 
 /atom/proc/build_appearance_list(list/build_overlays)
 	if (!islist(build_overlays))
@@ -176,6 +200,10 @@ SUBSYSTEM_DEF(overlays)
 
 		var/mutable_appearance/new_appearance = new /mutable_appearance()
 		new_appearance.appearance = appearance
+		// universal_icon_bindings: persist appearance metadata
+		new_appearance.icon_file = appearance.icon_file
+		new_appearance.transforms = appearance.transforms
+		// universal_icon_bindings end
 		var/key = "[appearance.icon]-[appearance.icon_state]-[appearance.plane]-[appearance.layer]-[appearance.dir]-[appearance.color]"
 		var/tmp_key = key
 		var/appearance_indx = 1

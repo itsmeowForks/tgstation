@@ -231,7 +231,7 @@
 /// getFlatIcon for [/datum/universal_icon]s
 /// Only supports 32x32 icons facing south
 /// Tough luck if you want anything else
-/// Still fairly slow for complex appearances due to filesystem operations. Try to avoid using it
+/// Comparatively much faster because it only does list ops
 /proc/get_flat_uni_icon(image/appearance, deficon, defstate, defblend, start = TRUE, parentcolor)
 	// Loop through the underlays, then overlays, sorting them into the layers list
 	#define PROCESS_OVERLAYS_OR_UNDERLAYS(flat, process, base_layer) \
@@ -279,27 +279,15 @@
 
 	var/should_display = TRUE
 	var/curicon = appearance.icon || deficon
-	var/string_curicon = "[curicon]"
 	var/curstate = appearance.icon_state || defstate
-	// Filter out 'runtime' icons (server-generated RSC cache icons)
-	// Write the icon to the filesystem so it can be used by iconforge
-	if(!isfile(curicon) || string_curicon == "/icon" || string_curicon == "/image" || !length(string_curicon))
-		var/file_path_tmp = "tmp/uni_icon/uni_icon-tmp-[rand(1, 999)].dmi" // this filename is temporary.
-		fcopy(curicon, file_path_tmp)
-		var/file_hash = rustg_hash_file(RUSTG_HASH_MD5, file_path_tmp)
-		// Use the hash as its new filename - this allows the uni_icon to be smart cached, because the filename will be consistent between runs if the content is the same
-		var/file_path = "tmp/uni_icon/uni_icon-[file_hash].dmi"
-		fcopy(file_path_tmp, file_path)
-		fdel(file_path_tmp) // delete the old one
-		curicon = file(file_path)
-
 	var/curblend = appearance.blend_mode || defblend
-	var/list/curstates = icon_states(curicon)
-	if(!(curstate in curstates))
-		if("" in curstates) // BYOND defaulting functionality
-			curstate = ""
-		else
-			should_display = FALSE
+	if(length("[curicon]")) // make sure it's not a runtime icon
+		var/list/curstates = icon_states(curicon)
+		if(!(curstate in curstates))
+			if("" in curstates) // BYOND defaulting functionality
+				curstate = ""
+			else
+				should_display = FALSE
 
 	if(appearance.overlays.len || appearance.underlays.len)
 		// Layers will be a sorted list of icons/overlays, based on the order in which they are displayed
@@ -336,9 +324,17 @@
 			if(layer_image.alpha == 0)
 				continue
 
-			if(layer_image == copy && length("[layer_image.icon]")) // 'layer_image' is an /image based on the object being flattened, and isn't a 'runtime' icon.
+			if(layer_image == copy) // 'layer_image' is an /image based on the object being flattened
 				curblend = BLEND_OVERLAY
-				add = uni_icon(layer_image.icon, layer_image.icon_state, SOUTH)
+				var/datum/icon_transformer/transformer = null
+				if(length(layer_image.transforms))
+					transformer = new()
+					transformer.transforms = deep_copy_list_alt(layer_image.transforms)
+				var/icon_path = "[layer_image.icon]"
+				if(!length(icon_path)) // use stored backup
+					icon_path = layer_image.icon_file
+				add = uni_icon(icon_path, layer_image.icon_state, SOUTH, 1, transformer)
+
 				if(appearance.color)
 					if(islist(appearance.color))
 						stack_trace("Unsupported color map appearance provided to get_flat_uni_icon, ignoring it.")
@@ -358,7 +354,15 @@
 		return flat
 
 	else if(should_display) // There's no overlays.
-		var/datum/universal_icon/final_icon = uni_icon(curicon, curstate, SOUTH)
+		var/icon_path = "[curicon]"
+		var/datum/icon_transformer/transformer = null
+		if(!length(icon_path)) // use stored backup
+			icon_path = appearance.icon_file
+		if(length(appearance.transforms))
+			transformer = new()
+			transformer.transforms = deep_copy_list_alt(appearance.transforms)
+
+		var/datum/universal_icon/final_icon = uni_icon(icon_path, curstate, SOUTH, 1, transformer)
 
 		if (appearance.alpha < 255)
 			final_icon.blend_color(rgb(255,255,255, appearance.alpha), ICON_MULTIPLY)

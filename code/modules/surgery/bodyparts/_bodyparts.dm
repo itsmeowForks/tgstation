@@ -1066,6 +1066,10 @@
 
 	icon_exists_or_scream(limb.icon, limb.icon_state) //Prints a stack trace on the first failure of a given iconstate.
 
+	// universal_icon_bindings: limb icons
+	limb.icon_file = "[limb.icon]"
+	// universal_icon_binding end
+
 	. += limb
 
 	if(aux_zone) //Hand shit

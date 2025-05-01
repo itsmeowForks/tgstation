@@ -25,6 +25,19 @@
 **/
 /proc/mutable_appearance(icon, icon_state = "", layer = FLOAT_LAYER, atom/offset_spokesman, plane = FLOAT_PLANE, alpha = 255, appearance_flags = NONE, offset_const)
 	var/mutable_appearance/appearance = new()
+	// universal_icon_bindings: persist appearance metadata
+	var/string_icon = "[icon]"
+	if(istype(icon, /icon))
+		var/icon/icon_old = icon
+		if(!length(string_icon) || string_icon == "/icon") // only replace if empty, otherwise we might put an outdated value
+			appearance.icon_file = icon_old.icon_file
+		appearance.transforms = deep_copy_list_alt(icon_old.transforms)
+		if(!length(appearance.icon_file))
+			// what the fuck
+			CRASH("Hey so no icon file was found ever on this icon which is weird as shit [string_icon] [appearance.icon_file]")
+	else // it's a byond file reference, not a /icon
+		appearance.icon_file = string_icon
+	// universal_icon_bindings end
 	appearance.icon = icon
 	appearance.icon_state = icon_state
 	appearance.layer = layer
