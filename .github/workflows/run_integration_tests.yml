@@ -50,9 +50,9 @@ jobs:
           mysql --defaults-extra-file=${{ env.MYSQL_CONFIG_FILE }} -e 'CREATE DATABASE tg_ci_prefixed;'
           mysql --defaults-extra-file=${{ env.MYSQL_CONFIG_FILE }} tg_ci_prefixed < SQL/tgstation_schema_prefixed.sql
           echo "Sucessful MySQL Database Setup"
-      - name: Install rust-g
+      - name: Install libraries
         run: |
-          bash tools/ci/install_rust_g.sh
+          bash tools/ci/install_libs.sh
       - name: Install dreamluau
         run: |
           bash tools/ci/install_dreamluau.sh

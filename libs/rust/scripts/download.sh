@@ -1,0 +1,6 @@
+#!/bin/bash
+set -euo pipefail
+
+wget -nv -O $TMPDIR/$EXECUTABLE_NAME "$LIBRARY_GIT/releases/download/$LIBRARY_VERSION/$EXECUTABLE_NAME"
+
+export EXECUTABLE_PATH=$TMPDIR/$EXECUTABLE_NAME

@@ -24,10 +24,10 @@ jobs:
       - name: Install BYOND
         if: steps.secrets_set.outputs.SECRETS_ENABLED
         uses: ./.github/actions/restore_or_install_byond
-      - name: Install rust-g
+      - name: Install libraries
         if: steps.secrets_set.outputs.SECRETS_ENABLED
         run: |
-          bash tools/ci/install_rust_g.sh
+          bash tools/ci/install_libs.sh
       - name: Compile and generate Autowiki files
         if: steps.secrets_set.outputs.SECRETS_ENABLED
         run: |
