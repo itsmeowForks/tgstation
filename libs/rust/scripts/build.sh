@@ -25,7 +25,14 @@ if [[ $NATIVE_BUILD == "yes" ]]; then
 else
     export PKG_CONFIG_ALLOW_CROSS=1
 fi
+
+if [[ -f $SCRIPT_ROOT/libs/rust/$LIBRARY_NAME/pre_build.sh ]]; then
+    source $SCRIPT_ROOT/libs/rust/$LIBRARY_NAME/pre_build.sh
+fi
 cargo build --release --target $TARGET $(echo $LIBRARY_BUILD_ARGS) $(echo $ADDITIONAL_LIBRARY_BUILD_ARGS)
+if [[ -f $SCRIPT_ROOT/libs/rust/$LIBRARY_NAME/post_build.sh ]]; then
+    source $SCRIPT_ROOT/libs/rust/$LIBRARY_NAME/post_build.sh
+fi
 
 export $EXECUTABLE_PATH=$SCRIPT_ROOT/libs/rust/$LIBRARY_NAME/repository/target/$TARGET/release/$EXECUTABLE_NAME
 
